@@ -1,5 +1,6 @@
 package com.github.jvalentino.echo.service
 
+import com.github.jvalentino.echo.dto.LoginDto
 import com.github.jvalentino.echo.dto.ResultDto
 import com.github.jvalentino.echo.entity.AuthUser
 import com.github.jvalentino.echo.dto.UserDto
@@ -9,9 +10,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.view.RedirectView
 import spock.lang.Specification
 import spock.lang.Subject
+
+import javax.servlet.http.HttpSession
 
 class UserDtoServiceTest extends Specification {
 
@@ -57,11 +61,13 @@ class UserDtoServiceTest extends Specification {
         UserDto user = new UserDto(email:'alpha', password:'bravo')
         AuthenticationManager authenticationManager = GroovyMock()
         SecurityContext context = GroovyMock()
+        HttpSession session = GroovyMock()
 
         when:
-        ResultDto result = subject.login(user, authenticationManager)
+        LoginDto result = subject.login(user, authenticationManager, session)
 
         then:
+        1 * session.getId() >> 'abc';
         1 * authenticationManager.authenticate(_) >> { UsernamePasswordAuthenticationToken token ->
             assert token.getPrincipal() == 'alpha'
             assert token.getCredentials() == 'bravo'
@@ -74,6 +80,8 @@ class UserDtoServiceTest extends Specification {
 
         and:
         result.success
+        result.sessionId == 'abc'
+        result.sessionIdBase64 == 'YWJj'
     }
 
     def "test login invalid"() {
@@ -81,9 +89,10 @@ class UserDtoServiceTest extends Specification {
         UserDto user = new UserDto(email:'alpha', password:'bravo')
         AuthenticationManager authenticationManager = GroovyMock()
         SecurityContext context = GroovyMock()
+        HttpSession session = GroovyMock()
 
         when:
-        ResultDto result = subject.login(user, authenticationManager)
+        ResultDto result = subject.login(user, authenticationManager, session)
 
         then:
         1 * authenticationManager.authenticate(_) >> { UsernamePasswordAuthenticationToken token ->

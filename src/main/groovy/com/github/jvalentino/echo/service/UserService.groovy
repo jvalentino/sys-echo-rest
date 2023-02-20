@@ -1,5 +1,6 @@
 package com.github.jvalentino.echo.service
 
+import com.github.jvalentino.echo.dto.LoginDto
 import com.github.jvalentino.echo.dto.ResultDto
 import com.github.jvalentino.echo.entity.AuthUser
 import com.github.jvalentino.echo.dto.UserDto
@@ -16,6 +17,7 @@ import org.apache.commons.codec.digest.Md5Crypt
 import org.apache.commons.codec.digest.B64
 
 import javax.annotation.PostConstruct
+import javax.servlet.http.HttpSession
 
 /**
  * A general service used for dealing with users
@@ -60,19 +62,20 @@ class UserService {
         log.info('===========================================================')
     }
 
-    ResultDto login(UserDto user, AuthenticationManager authenticationManager) {
+    ResultDto login(UserDto user, AuthenticationManager authenticationManager, HttpSession session) {
         log.info('Attempting to login the user user by email of ' + user.email)
 
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.email, user.password))
             SecurityContextHolder.getContext().setAuthentication(authentication)
-            return new ResultDto()
+            String sessionId = session.getId()
+            return new LoginDto(sessionId:sessionId, sessionIdBase64:sessionId.bytes.encodeBase64())
         } catch (e) {
             log.error("${user.email} gave invalid credentials", e)
         }
 
-        new ResultDto(success:false, message:'Invalid Credentials')
+        new LoginDto(success:false, message:'Invalid Credentials')
     }
 
     AuthUser saveNewUser(String email, String firstName, String lastName, String plaintextPassword) {

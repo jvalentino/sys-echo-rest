@@ -1,6 +1,6 @@
 package com.github.jvalentino.echo.rest
 
-import com.github.jvalentino.echo.dto.ResultDto
+import com.github.jvalentino.echo.dto.LoginDto
 import com.github.jvalentino.echo.dto.UserDto
 import com.github.jvalentino.echo.service.UserService
 import groovy.transform.CompileDynamic
@@ -11,6 +11,8 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+
+import javax.servlet.http.HttpSession
 
 /**
  * Used for handling custom login
@@ -29,8 +31,9 @@ class LoginRest {
     UserService userService
 
     @PostMapping('/custom-login')
-    ResultDto login(@RequestBody UserDto user) {
-        userService.login(user, authenticationManager)
+    LoginDto login(@RequestBody UserDto user, HttpSession session) {
+        LoginDto result = userService.login(user, authenticationManager, session)
+        result
     }
 
 }
