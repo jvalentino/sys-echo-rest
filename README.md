@@ -353,11 +353,50 @@ This returns binary data, and doesn't have to be changed at all:
 
 If you invoke http://localhost:8080/version/download/3 via postman, you can see the PDF in the body instead of having to worry about it with cURL.
 
-### /version/new
+### /version/new *
 
 Same pattern as before, no more redirect and just return the ResultDto:
 
+```groovy
+ @PostMapping('/version/new/{docId}')
+    ResultDto upload(@RequestParam('file') MultipartFile file, @PathVariable(value='docId') Long docId) {
+        AuthUser user = userService.currentLoggedInUser()
 
+        docService.uploadNewVersion(user, file, DateGenerator.date(), docId)
 
+        new ResultDto()
+    }
+```
 
+However, this can be quite involved with trying to get it work through cURL or Postman, so we are going to wait to verify it when the UI is hooked up.
+
+### /upload-file *
+
+Same pattern as before, no more redirect and just return the ResultDto:
+
+```groovy
+@Controller
+@Slf4j
+@RestController
+@CompileDynamic
+class UploadRest {
+
+    @Autowired
+    DocService docService
+
+    @Autowired
+    UserService userService
+
+    @PostMapping('/upload-file')
+    ResultDto upload(@RequestParam('file') MultipartFile file) {
+        AuthUser user = userService.currentLoggedInUser()
+        docService.uploadNewDoc(user, file, DateGenerator.date())
+
+        new ResultDto()
+    }
+
+}
+```
+
+However, this can be quite involved with trying to get it work through cURL or Postman, so we are going to wait to verify it when the UI is hooked up.
 
