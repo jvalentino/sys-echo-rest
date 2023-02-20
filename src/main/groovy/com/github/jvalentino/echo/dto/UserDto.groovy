@@ -1,4 +1,4 @@
-package com.github.jvalentino.echo.model
+package com.github.jvalentino.echo.dto
 
 import groovy.transform.CompileDynamic
 
@@ -7,7 +7,7 @@ import groovy.transform.CompileDynamic
  * @author john.valentino
  */
 @CompileDynamic
-class User {
+class UserDto {
 
     String email
     String password

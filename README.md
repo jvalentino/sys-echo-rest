@@ -79,6 +79,76 @@ The end result of http://localhost:8080 is then:
 }
 ```
 
+### /custom-login
+
+We are just returning a general Result (true or false), which when false contains a general error message like "invalid credentials":
+
+```groovy
+@Controller
+@Slf4j
+@RestController
+@CompileDynamic
+class LoginRest {
+
+    @Autowired
+    AuthenticationManager authenticationManager
+
+    @Autowired
+    UserService userService
+
+    @PostMapping('/custom-login')
+    ResultDto login(@RequestBody UserDto user) {
+        userService.login(user, authenticationManager)
+    }
+
+}
+```
+
+It is recommended you use Postman to test it, but you can also just use curl:
+
+```bash
+curl -v --location --request POST 'http://localhost:8080/custom-login' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "email":"admin",
+    "password": "6c8ec11f-9f8e-4b9d-b861-c2eebec81b34"
+}'
+```
+
+In the result, we will later need the session information that is given in the header:
+
+```bash
+   Trying 127.0.0.1:8080...
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> POST /custom-login HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.79.1
+> Accept: */*
+> Content-Type: application/json
+> Content-Length: 79
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 
+< Vary: Origin
+< Vary: Access-Control-Request-Method
+< Vary: Access-Control-Request-Headers
+< X-Content-Type-Options: nosniff
+< X-XSS-Protection: 1; mode=block
+< Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+< Pragma: no-cache
+< Expires: 0
+< X-Frame-Options: DENY
+< Set-Cookie: SESSION=ZGUxMGFlOTYtZDEyNS00ZmU5LTlkZTQtYjg1NDgyMDBhM2Vj; Path=/; HttpOnly; SameSite=Lax
+< Content-Type: application/json
+< Transfer-Encoding: chunked
+< Date: Mon, 20 Feb 2023 17:57:11 GMT
+< 
+* Connection #0 to host localhost left intact
+{"success":true,"message":null}
+```
+
+In this case:  SESSION=ZGUxMGFlOTYtZDEyNS00ZmU5LTlkZTQtYjg1NDgyMDBhM2Vj
+
 
 
 ### /dashboard
@@ -107,6 +177,14 @@ class DashboardRest {
     }
 
 }
+```
+
+To hit this though, you now need to be logged in which you means you have to provide the session token:
+
+```bash
+curl -v --location --request GET 'http://localhost:8080/dashboard' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: SESSION=ZGUxMGFlOTYtZDEyNS00ZmU5LTlkZTQtYjg1NDgyMDBhM2Vj'
 ```
 
 When running the main class you can now directly hit http://localhost:8080/dashboard and see a problem:
@@ -164,7 +242,37 @@ class AuthUser {
 
 ```
 
- 
+ With the result now being:
+
+```json
+{
+   "documents":[
+      {
+         "docId":2,
+         "name":"sample.pdf",
+         "mimeType":"application/pdf",
+         "createdByUser":{
+            "authUserId":1,
+            "email":"admin",
+            "firstName":"admin",
+            "lastName":"admin"
+         },
+         "updatedByUser":{
+            "authUserId":1,
+            "email":"admin",
+            "firstName":"admin",
+            "lastName":"admin"
+         },
+         "createdDateTime":1676902931940,
+         "updatedDateTime":1676902931940,
+         "versions":null,
+         "tasks":null
+      }
+   ]
+}
+```
+
+
 
 
 

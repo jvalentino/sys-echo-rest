@@ -1,7 +1,8 @@
 package com.github.jvalentino.echo.service
 
+import com.github.jvalentino.echo.dto.ResultDto
 import com.github.jvalentino.echo.entity.AuthUser
-import com.github.jvalentino.echo.model.User
+import com.github.jvalentino.echo.dto.UserDto
 import com.github.jvalentino.echo.repo.AuthUserRepo
 import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
@@ -13,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.apache.commons.codec.digest.Md5Crypt
 import org.apache.commons.codec.digest.B64
-import org.springframework.web.servlet.view.RedirectView
 
 import javax.annotation.PostConstruct
 
@@ -60,21 +60,19 @@ class UserService {
         log.info('===========================================================')
     }
 
-    RedirectView login(User user, AuthenticationManager authenticationManager) {
+    ResultDto login(UserDto user, AuthenticationManager authenticationManager) {
         log.info('Attempting to login the user user by email of ' + user.email)
 
         try {
-            RedirectView redirectView = new RedirectView('/dashboard', true)
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.email, user.password))
             SecurityContextHolder.getContext().setAuthentication(authentication)
-            return redirectView
+            return new ResultDto()
         } catch (e) {
             log.error("${user.email} gave invalid credentials", e)
         }
 
-        RedirectView redirectView = new RedirectView('/invalid', true)
-        redirectView
+        new ResultDto(success:false, message:'Invalid Credentials')
     }
 
     AuthUser saveNewUser(String email, String firstName, String lastName, String plaintextPassword) {

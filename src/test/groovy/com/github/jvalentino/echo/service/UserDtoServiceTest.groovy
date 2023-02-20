@@ -1,9 +1,9 @@
 package com.github.jvalentino.echo.service
 
+import com.github.jvalentino.echo.dto.ResultDto
 import com.github.jvalentino.echo.entity.AuthUser
-import com.github.jvalentino.echo.model.User
+import com.github.jvalentino.echo.dto.UserDto
 import com.github.jvalentino.echo.repo.AuthUserRepo
-import com.github.jvalentino.echo.service.UserService
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -13,7 +13,7 @@ import org.springframework.web.servlet.view.RedirectView
 import spock.lang.Specification
 import spock.lang.Subject
 
-class UserServiceTest extends Specification {
+class UserDtoServiceTest extends Specification {
 
     @Subject
     UserService subject
@@ -54,12 +54,12 @@ class UserServiceTest extends Specification {
 
     def "test login"() {
         given:
-        User user = new User(email:'alpha', password:'bravo')
+        UserDto user = new UserDto(email:'alpha', password:'bravo')
         AuthenticationManager authenticationManager = GroovyMock()
         SecurityContext context = GroovyMock()
 
         when:
-        RedirectView result = subject.login(user, authenticationManager)
+        ResultDto result = subject.login(user, authenticationManager)
 
         then:
         1 * authenticationManager.authenticate(_) >> { UsernamePasswordAuthenticationToken token ->
@@ -73,17 +73,17 @@ class UserServiceTest extends Specification {
         }
 
         and:
-        result.getUrl() == '/dashboard'
+        result.success
     }
 
     def "test login invalid"() {
         given:
-        User user = new User(email:'alpha', password:'bravo')
+        UserDto user = new UserDto(email:'alpha', password:'bravo')
         AuthenticationManager authenticationManager = GroovyMock()
         SecurityContext context = GroovyMock()
 
         when:
-        RedirectView result = subject.login(user, authenticationManager)
+        ResultDto result = subject.login(user, authenticationManager)
 
         then:
         1 * authenticationManager.authenticate(_) >> { UsernamePasswordAuthenticationToken token ->
@@ -93,7 +93,7 @@ class UserServiceTest extends Specification {
         0 * context.setAuthentication(_)
 
         and:
-        result.getUrl() == '/invalid'
+        result.success == false
     }
 
     def "test saveNewUser"() {
