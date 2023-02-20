@@ -40,7 +40,44 @@ At this point, we are going to replace one controller at a time with a REST endp
 
 ### /
 
-This is the easiest place to start because it doesn't involve security.
+This is the easiest place to start because it doesn't involve security. We just rename HomeModel to HomeDto, and have that be the result object.
+
+```groovy
+@Controller
+@Slf4j
+@RestController
+@CompileDynamic
+class HomeRest {
+
+    @Autowired
+    UserService userService
+
+    @Autowired
+    DocService docService
+
+    @GetMapping('/')
+    HomeDto index() {
+        log.info('Rendering index')
+        HomeDto response = new HomeDto()
+        response.with {
+            users = userService.countCurrentUsers()
+            documents = docService.countDocuments()
+        }
+
+        response
+    }
+
+}
+```
+
+The end result of http://localhost:8080 is then:
+
+```json
+{
+   "users":1,
+   "documents":1
+}
+```
 
 
 
