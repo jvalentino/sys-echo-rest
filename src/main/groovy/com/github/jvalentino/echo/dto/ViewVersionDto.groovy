@@ -1,4 +1,4 @@
-package com.github.jvalentino.echo.model
+package com.github.jvalentino.echo.dto
 
 import com.github.jvalentino.echo.entity.Doc
 import groovy.transform.CompileDynamic
@@ -8,7 +8,7 @@ import groovy.transform.CompileDynamic
  * @author john.valentino
  */
 @CompileDynamic
-class ViewVersionModel {
+class ViewVersionDto {
 
     Doc doc
 

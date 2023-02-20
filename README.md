@@ -272,9 +272,90 @@ class AuthUser {
 }
 ```
 
+### /view/versions
 
+Same pattern, name the model class to a DTO, and then return it as the method result:
 
+```groovy
+@GetMapping('/view-versions/{docId}')
+    ViewVersionDto index(@PathVariable(value='docId') Long docId) {
+        ViewVersionDto result = new ViewVersionDto()
+        result.with {
+            doc = docService.retrieveDocVersions(docId)
+        }
 
+        log.info("Doc ${docId} has ${result.doc.versions.size()} versions")
+
+        result
+    }
+```
+
+cURL can be used to invoke the service:
+
+```bash
+curl -v --location --request GET 'http://localhost:8080/view-versions/2' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: SESSION=ZGUxMGFlOTYtZDEyNS00ZmU5LTlkZTQtYjg1NDgyMDBhM2Vj'
+```
+
+Resulting in:
+
+```json
+{
+    "doc": {
+        "docId": 2,
+        "name": "sample.pdf",
+        "mimeType": "application/pdf",
+        "createdByUser": null,
+        "updatedByUser": null,
+        "createdDateTime": 1676902931940,
+        "updatedDateTime": 1676902931940,
+        "versions": [
+            {
+                "docVersionId": 3,
+                "versionNum": 1,
+                "doc": null,
+                "data": null,
+                "createdDateTime": 1676902931940,
+                "createdByUser": null
+            }
+        ],
+        "tasks": null
+    }
+}
+```
+
+### /download/version
+
+This returns binary data, and doesn't have to be changed at all:
+
+```groovy
+// https://www.baeldung.com/servlet-download-file
+    @GetMapping('/version/download/{docVersionId}')
+    void downloadVersion(@PathVariable(value='docVersionId') Long docVersionId, HttpServletResponse response) {
+        DocVersion version = docService.retrieveVersion(docVersionId)
+
+        response.setContentType(version.doc.mimeType)
+        response.setHeader('Content-disposition',
+                "attachment; filename=${version.doc.name.replaceAll(' ', '')}")
+
+        InputStream is = new ByteArrayInputStream(version.data)
+        OutputStream out = response.getOutputStream()
+
+        byte[] buffer = new byte[1048]
+
+        int numBytesRead
+        while ((numBytesRead = is.read(buffer)) > 0) {
+            out.write(buffer, 0, numBytesRead)
+        }
+    }
+```
+
+If you invoke http://localhost:8080/version/download/3 via postman, you can see the PDF in the body instead of having to worry about it with cURL.
+
+### /version/new
+
+Same pattern as before, no more redirect and just return the ResultDto:
 
 
 
