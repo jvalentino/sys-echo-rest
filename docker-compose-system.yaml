@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  pg-0:
+    container_name: echo-pg-0
+    image: bitnami/postgresql-repmgr:14
+    restart: always
+    ports:
+      - 5432
+    volumes:
+      - ./prod-db/pg_0_data:/bitnami/postgresql
+    environment:
+      - POSTGRESQL_POSTGRES_PASSWORD=postgres
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRESQL_DATABASE=examplesys
+      - REPMGR_PASSWORD=postgres
+      - REPMGR_PRIMARY_HOST=pg-0
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
+      - REPMGR_NODE_NAME=pg-0
+      - REPMGR_NODE_NETWORK_NAME=pg-0
+  pg-1:
+    container_name: echo-pg-1
+    image: bitnami/postgresql-repmgr:14
+    restart: always
+    ports:
+      - 5432
+    volumes:
+      - ./prod-db/pg_1_data:/bitnami/postgresql
+    environment:
+      - POSTGRESQL_POSTGRES_PASSWORD=postgres
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRESQL_DATABASE=examplesys
+      - REPMGR_PASSWORD=postgres
+      - REPMGR_PRIMARY_HOST=pg-0
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
+      - REPMGR_NODE_NAME=pg-1
+      - REPMGR_NODE_NETWORK_NAME=pg-1
+  pgpool:
+    container_name: echo-pgpool
+    image: bitnami/pgpool:4
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - PGPOOL_BACKEND_NODES=0:pg-0:5432,1:pg-1:5432
+      - PGPOOL_SR_CHECK_USER=postgres
+      - PGPOOL_SR_CHECK_PASSWORD=postgres
+      - PGPOOL_ENABLE_LDAP=no
+      - PGPOOL_POSTGRES_USERNAME=postgres
+      - PGPOOL_POSTGRES_PASSWORD=postgres
+      - PGPOOL_ADMIN_USERNAME=postgres
+      - PGPOOL_ADMIN_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  instance1:
+    container_name: echo-instance-1
+    image: tomcat:9-jdk11
+    restart: always
+    command: sh -c "
+      sleep 60 &&
+      cd /usr/local/tomcat/bin &&
+      ls -la &&
+      ./catalina.sh run"
+    ports:
+      - '8000:8080'
+    environment:
+      DB_HOST: pgpool
+    volumes:
+      - ./build/libs/sys-delta-0.0.1.war:/usr/local/tomcat/webapps/ROOT.war
+    depends_on:
+      - pg-0
+      - pg-1
+      - pgpool
+
+  instance2:
+    container_name: echo-instance-2
+    image: tomcat:9-jdk11
+    restart: always
+    command: sh -c "
+      sleep 60 &&
+      cd /usr/local/tomcat/bin &&
+      ls -la &&
+      ./catalina.sh run"
+    ports:
+      - '9000:8080'
+    environment:
+      DB_HOST: pgpool
+    volumes:
+      - ./build/libs/sys-echo-rest-0.0.1.war:/usr/local/tomcat/webapps/ROOT.war
+    depends_on:
+      - pg-0
+      - pg-1
+      - pgpool
+
+  nginx:
+    container_name: echo-load-balancer
+    image: nginx:1.13
+    ports:
+      - "80:80"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - pg-0
+      - pg-1
+      - pgpool
+      - instance1
+      - instance2
+
+
+
