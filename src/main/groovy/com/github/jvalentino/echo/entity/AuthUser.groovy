@@ -26,8 +26,10 @@ class AuthUser {
 
     String email
 
+    @JsonIgnore
     String password
 
+    @JsonIgnore
     String salt
 
     @Column(name = 'first_name')

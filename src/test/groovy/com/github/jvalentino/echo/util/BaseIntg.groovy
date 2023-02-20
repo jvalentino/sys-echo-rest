@@ -1,5 +1,6 @@
 package com.github.jvalentino.echo.util
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -11,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.MvcResult
 import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
 
@@ -43,6 +45,11 @@ abstract class BaseIntg extends Specification {
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken('1', null)
         SecurityContextHolder.getContext().setAuthentication(authentication)
+    }
+
+    Object toObject(MvcResult response, Class clazz) {
+        String json = response.getResponse().getContentAsString()
+        new ObjectMapper().readValue(json, clazz)
     }
 
 }

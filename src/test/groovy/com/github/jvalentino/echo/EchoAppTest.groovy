@@ -19,15 +19,4 @@ class EchoAppTest extends Specification {
         1 * SpringApplication.run(EchoApp, null)
     }
 
-    def "Test configure"() {
-        given:
-        EchoApp subject = new EchoApp()
-        SpringApplicationBuilder builder = GroovyMock()
-
-        when:
-        subject.configure(builder)
-
-        then:
-        1 *  builder.sources(EchoApp)
-    }
 }

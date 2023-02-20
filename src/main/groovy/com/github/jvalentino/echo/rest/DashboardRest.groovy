@@ -1,38 +1,35 @@
-package com.github.jvalentino.echo.controller
+package com.github.jvalentino.echo.rest
 
-import com.github.jvalentino.echo.model.DashboardModel
+import com.github.jvalentino.echo.dto.DashboardDto
 import com.github.jvalentino.echo.service.DocService
 import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Controller
-import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
 
 /**
- * Used for the dashboard
- * @author john.valentino
+ * Rest endpoint for the dashboard
+ * @john.valentino
  */
-@Controller
-@Slf4j
 @CompileDynamic
-class DashboardController {
+@RestController
+@Slf4j
+class DashboardRest {
 
     @Autowired
     DocService docService
 
     @GetMapping('/dashboard')
-    String dashboard(Model model) {
+    DashboardDto dashboard() {
         log.info('Rendering dashboard')
 
-        DashboardModel dashboard = new DashboardModel()
+        DashboardDto dashboard = new DashboardDto()
         dashboard.with {
             documents = docService.allDocs()
         }
 
-        model.addAttribute('model', dashboard)
-
-        'dashboard'
+        dashboard
     }
 
 }
