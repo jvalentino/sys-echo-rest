@@ -402,15 +402,53 @@ However, this can be quite involved with trying to get it work through cURL or P
 
 ### CORS
 
+If you do nothing, you will see error messages like this:
+
 ```
 Access to fetch at 'http://localhost:8080//' from origin 'http://localhost:3000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
 ```
 
-TBD
+To get around this, I generally just disable CORS in place of specifying each host name that the requests can originate:
+
+```groovy
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@CompileDynamic
+@SuppressWarnings(['UnnecessaryObjectReferences'])
+class MyCORSFilter implements Filter {
+
+    @Override
+    void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) req
+        HttpServletResponse response = (HttpServletResponse) res
+
+        response.setHeader('Access-Control-Allow-Origin', request.getHeader('Origin'))
+        response.setHeader('Access-Control-Allow-Credentials', 'true')
+        response.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT')
+        response.setHeader('Access-Control-Max-Age', '3600')
+        response.setHeader('Access-Control-Allow-Headers',
+                'Content-Type, Accept, X-Requested-With, x-auth-token, X-Auth-Token, Set-Cookie, Cookie')
+        response.setHeader('Access-Control-Expose-Headers', 'X-Auth-Token, Set-Cookie, Cookie')
+
+        chain.doFilter(req, res)
+    }
+
+    @Override
+    void init(FilterConfig filterConfig) {
+    }
+
+    @Override
+    void destroy() {
+    }
+
+}
+```
+
+Additionally because we want to use the HTTP Header of `X-Auth-Token`, we have to declare it here as well as being allowed.
 
 ### Login Revisited
 
-
+By default, Spring Security will use that `Set-Cookie` on the return of the login REST call, which creates a local cookie with the session ID. We then need to provide a `Cookie` header with each request using that Base64 encoded session ID for the request to be authorized. Cookies are a bad practice, so we then have to override this behavior by using a header called `X-Auth-Token`, that will accept the session ID in non base64 encoded format.
 
 ```groovy
 @Bean
