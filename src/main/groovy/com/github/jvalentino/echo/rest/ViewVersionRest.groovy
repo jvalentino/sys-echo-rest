@@ -6,6 +6,7 @@ import com.github.jvalentino.echo.entity.AuthUser
 import com.github.jvalentino.echo.entity.DocVersion
 import com.github.jvalentino.echo.service.DocService
 import com.github.jvalentino.echo.service.UserService
+import com.github.jvalentino.echo.util.DateGenerator
 import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
