@@ -412,5 +412,14 @@ TBD
 
 
 
+```groovy
+@Bean
+    HttpSessionIdResolver httpSessionIdResolver() {
+        HeaderHttpSessionIdResolver.xAuthToken()
+    }
+```
+
+
+
 
 

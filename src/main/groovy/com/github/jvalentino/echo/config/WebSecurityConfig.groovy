@@ -12,6 +12,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
+import org.springframework.session.web.http.HeaderHttpSessionIdResolver
+import org.springframework.session.web.http.HttpSessionIdResolver
 
 /**
  * Another magical class that handles both allowing access of endpoints without auth,
@@ -39,6 +41,11 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             }
 
         }
+    }
+
+    @Bean
+    HttpSessionIdResolver httpSessionIdResolver() {
+        HeaderHttpSessionIdResolver.xAuthToken()
     }
 
     @Override
