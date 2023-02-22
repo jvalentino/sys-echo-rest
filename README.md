@@ -551,6 +551,12 @@ curl -v --location --request GET 'http://localhost:8080/view-versions/2' \
 
 ![01](./wiki/arch-docker.png)
 
+### Sequence Diagram
+
+I normally wouldn't draw a diagram at the code/implementation level like this, but this gives good insight how the backend was completely refactored, and how the new UI uses that backend:
+
+![01](./wiki/sequence.png)
+
 ### pgpool
 
 > Pgpool-II is a middleware that works between PostgreSQL servers and a PostgreSQL database client. It is distributed under a license similar to BSD and MIT. It provides the following features.
